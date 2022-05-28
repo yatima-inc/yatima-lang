@@ -10,6 +10,7 @@ use crate::{
     BinderInfo,
   },
   name::Name,
+  nat::Nat,
 };
 
 pub struct InductiveDecl {
@@ -24,16 +25,16 @@ pub struct InductiveDecl {
 }
 
 #[inline]
-pub fn add_inductive_typ(ind_decl: &InductiveDecl, env: &mut Env) -> Result<ConstCid, EnvError> {
+pub fn add_inductive_typ(decl: &InductiveDecl, env: &mut Env) -> Result<ConstCid, EnvError> {
   let ind = Const::Inductive {
-    name: ind_decl.name.clone(),
-    lvl: ind_decl.lvl.clone(),
-    typ: ind_decl.typ,
-    params: From::from(ind_decl.params.len()),
-    indices: From::from(ind_decl.indices.len()),
-    ctors: ind_decl.ctors.clone(),
-    recr: ind_decl.recr,
-    safe: ind_decl.safe,
+    name: decl.name.clone(),
+    lvl: decl.lvl.clone(),
+    typ: decl.typ,
+    params: From::from(decl.params.len()),
+    indices: From::from(decl.indices.len()),
+    ctors: decl.ctors.clone(),
+    recr: decl.recr,
+    safe: decl.safe,
     // TODO
     refl: false,
     nest: false,
@@ -43,12 +44,27 @@ pub fn add_inductive_typ(ind_decl: &InductiveDecl, env: &mut Env) -> Result<Cons
 
 #[allow(unused_variables)]
 #[inline]
-pub fn add_inductive_ctors(ind: &InductiveDecl, env: &mut Env) {
-  todo!()
+pub fn add_inductive_ctors(decl: &InductiveDecl, ind: ConstCid, param: Nat, safe: bool, env: &mut Env) -> Result<Vec<ConstCid>, EnvError> {
+  let mut vec = vec![];
+  for (name, typ) in decl.ctors.iter() {
+    let ctor = Const::Constructor {
+      name: name.clone(),
+      // TODO: what should lvl be? Maybe it should be included in the `ctors` field
+      lvl: vec![],
+      ind,
+      typ: *typ,
+      param,
+      field: todo!(),
+      safe,
+    };
+    let cid = ctor.store(env)?;
+    vec.push(cid);
+  }
+  Ok(vec)
 }
 
 #[allow(unused_variables)]
 #[inline]
-pub fn add_inductive_rules(ind: &InductiveDecl, env: &mut Env) {
+pub fn add_inductive_rules(decl: &InductiveDecl, env: &mut Env) -> Result<ConstCid, EnvError> {
   todo!()
 }
