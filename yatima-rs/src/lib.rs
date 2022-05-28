@@ -12,6 +12,7 @@ extern crate rand;
 extern crate alloc;
 
 pub mod constant;
+pub mod declaration;
 pub mod environment;
 pub mod expression;
 pub mod name;

@@ -17,6 +17,7 @@ use core::cell::{
 use core::ops::DerefMut;
 
 use crate::{
+  declaration::InductiveDecl,
   constant::{
     Const,
     DefSafety,
@@ -241,17 +242,6 @@ pub fn parse_const_def(
 /// | Cons (k: Nat) (x: A) (xs: Vector A k): Vector A (Nat.succ k),
 /// ```
 /// TODO: nest, refl
-struct InductiveDecl {
-  safe: bool,
-  recr: bool,
-  name: Name,
-  lvl: Vec<Name>,
-  params: Vec<(BinderInfo, Name, Expr)>,
-  indices: Vec<(BinderInfo, Name, Expr)>,
-  typ: Expr,
-  ctors: Vec<(Name, Expr)>,
-}
-
 // TODO: tentative
 pub fn parse_const_inductive_decl(
   global_ctx: GlobalCtx,
