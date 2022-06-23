@@ -18,6 +18,10 @@ use nom::{
   InputLength,
 };
 
+use alloc::{
+  string::String,
+  vec::Vec,
+};
 use core::{
   cmp::Ordering,
   fmt,
@@ -25,11 +29,7 @@ use core::{
   num::ParseIntError,
 };
 
-use alloc::vec::Vec;
-
 use im::vector::Vector;
-
-use alloc::string::String;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum ParseErrorKind {

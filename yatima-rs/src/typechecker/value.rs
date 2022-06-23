@@ -1,17 +1,18 @@
-use crate::expression::{
+use crate::{
+  expression::{
     BinderInfo,
-    Literal,
     LitType,
-  };
-use crate::typechecker::{
-  expression::*,
-  universe::*,
+    Literal,
+  },
+  typechecker::{
+    expression::*,
+    universe::*,
+  },
 };
+
+use alloc::rc::Rc;
+use core::cell::RefCell;
 use im::Vector;
-use std::{
-  cell::RefCell,
-  rc::Rc,
-};
 
 // Expressions are things to be evaluated, given an appropriate environment.
 // Values are the result of evaluating (reducing, normalizing) expressions in an

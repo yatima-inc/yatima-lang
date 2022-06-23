@@ -1,21 +1,22 @@
 use crate::{
-  name::Name,
   constant::{
     DefSafety,
-    QuotKind
+    QuotKind,
   },
   expression::{
     BinderInfo,
-    Literal,
     LitType,
+    Literal,
   },
+  name::Name,
   nat::Nat,
   typechecker::universe::*,
 };
 
-use std::{
-  collections::HashMap,
+use alloc::{
+  collections::BTreeMap,
   rc::Rc,
+  vec::Vec,
 };
 
 pub type ExprPtr = Rc<Expr>;
@@ -58,29 +59,20 @@ pub enum Const {
     // name: Name,
     uvars: Nat,
     typ: ExprPtr,
-    safe: bool
+    safe: bool,
   },
   /// theorem
-  Theorem {
-    uvars: Nat,
-    typ: ExprPtr,
-    expr: ExprPtr
-  },
+  Theorem { uvars: Nat, typ: ExprPtr, expr: ExprPtr },
   /// opaque
   Opaque {
     // name: Name,
     uvars: Nat,
     typ: ExprPtr,
     expr: ExprPtr,
-    safe: bool
+    safe: bool,
   },
   /// def
-  Definition {
-    uvars: Nat,
-    typ: ExprPtr,
-    expr: ExprPtr,
-    safe: DefSafety
-  },
+  Definition { uvars: Nat, typ: ExprPtr, expr: ExprPtr, safe: DefSafety },
   /// inductive type
   Inductive {
     uvars: Nat,
@@ -114,7 +106,7 @@ pub enum Const {
     minors: Index,
     /// Since pointers are in one-to-one correspondence with CIDs, we can use
     /// raw pointers as keys
-    rules: HashMap<*const Const, RecursorRule>,
+    rules: BTreeMap<*const Const, RecursorRule>,
     k: bool,
     safe: bool,
   },

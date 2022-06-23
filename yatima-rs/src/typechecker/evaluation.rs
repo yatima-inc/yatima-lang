@@ -1,14 +1,15 @@
-use crate::constant::DefSafety;
-use crate::typechecker::{
-  expression::*,
-  universe::*,
-  value::*,
+use crate::{
+  constant::DefSafety,
+  typechecker::{
+    expression::*,
+    universe::*,
+    value::*,
+  },
 };
+
+use alloc::rc::Rc;
+use core::cell::RefCell;
 use im::Vector;
-use std::{
-  cell::RefCell,
-  rc::Rc,
-};
 
 #[inline]
 pub fn result(val: Value) -> ThunkPtr { Rc::new(RefCell::new(Thunk::Res(val))) }
@@ -89,8 +90,8 @@ pub fn eval(expr: ExprPtr, mut env: Env) -> Value {
       let itself = suspend(expr, env.clone());
       env.exprs.push_front(itself);
       eval(body, env)
-    },
-    _ => todo!() // Projections
+    }
+    _ => todo!(), // Projections
   }
 }
 

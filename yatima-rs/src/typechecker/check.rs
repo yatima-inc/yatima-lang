@@ -1,16 +1,19 @@
-use crate::expression::{
-    Literal,
+use crate::{
+  expression::{
     LitType,
-  };
-use crate::typechecker::{
-  equality::*,
-  evaluation::*,
-  expression::*,
-  universe::*,
-  value::*,
+    Literal,
+  },
+  typechecker::{
+    equality::*,
+    evaluation::*,
+    expression::*,
+    universe::*,
+    value::*,
+  },
 };
+
+use alloc::rc::Rc;
 use im::Vector;
-use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CheckError {
@@ -113,6 +116,6 @@ pub fn infer(
       Ok(Value::Sort(one))
     }
     Expr::Fix(..) => Err(CheckError::CannotInferFix),
-    _ => todo!() // Projections
+    _ => todo!(), // Projections
   }
 }

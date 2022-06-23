@@ -16,15 +16,17 @@ use crate::{
   nat::Nat,
 };
 
+use alloc::{
+  boxed::Box,
+  string::String,
+  vec::Vec,
+};
+
 use serde::{
   Deserialize,
   Serialize,
 };
 
-use alloc::{
-  boxed::Box,
-  string::String,
-};
 use libipld::serde::to_ipld;
 
 use multihash::{
@@ -85,7 +87,7 @@ pub enum Expr {
   Lty(LitType),
   /// Fixpoint recursion, μ x. x
   Fix(Name, Box<Expr>),
-  /// Projections 
+  /// Projections
   Proj(Nat, Box<Expr>),
 }
 
