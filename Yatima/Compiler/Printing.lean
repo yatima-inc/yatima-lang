@@ -99,40 +99,28 @@ mutual
     | .definition defn => printDefinition defn
     | .inductive ind => do
       let type ← getExpr ind.type ind.name
-      return s!"inductive {ind.name} {ind.lvls} : {← printExpr type} \n" ++ s!"{ind.block.anon}.{ind.block.meta}@{ind.ind}"
+      return s!"TODO"
+      --return s!"inductive {ind.name} {ind.lvls} : {← printExpr type} \n" ++ s!"{ind.block.anon}.{ind.block.meta}@{ind.ind}"
     -- TODO: print actual ConstructorInfo
     | .constructor ctor => do
       let type ← getExpr ctor.type ctor.name
       let ind ← getConst ctor.block
-      let ind ← match ind with
-        | .mutIndBlock is => match get' is ctor.ind with 
-          | some i => pure i
-          | _ => throw s!"malformed constructor with `ind` field bigger than the block it points to"
-        | _ => throw s!"malformed constructor that does not point to an inductive block {ctor.block.anon}.{ctor.block.meta}"
-
-      return s!"{printIsSafe ind.safe}constructor {ctor.name} {ctor.lvls} : {← printExpr type} :=\n" ++
-             s!"  {ind.name}@{ctor.idx}"
+      return s!"TODO"
+      --return s!"{printIsSafe ind.safe}constructor {ctor.name} {ctor.lvls} : {← printExpr type} :=\n" ++
+      --       s!"  {ind.name}@{ctor.idx}"
     -- TODO: print actual RecursorInfo
     | .recursor recr => do
       let type ← getExpr recr.type recr.name
       let ind ← getConst recr.block
-      let ind ← match ind with
-        | .mutIndBlock is => match get' is recr.ind with 
-          | some i => pure i
-          | _ => throw s!"malformed recursor with `ind` field bigger than the block it points to"
-        | _ => throw s!"malformed recursor that does not point to an inductive block {recr.block.anon}.{recr.block.meta}"
-      -- TODO
-      --let rules ← printRules recr.externalRules
-      return s!"{printIsSafe ind.safe}recursor {recr.name} {recr.lvls} : {← printExpr type} :=\n" ++
-             s!"  {ind.name}@{recr.idx}"
-    | .mutDef mutDef =>
-      return s!"mutdef {mutDef.name}@{mutDef.idx} {← printYatimaConst (← getConst mutDef.block)}"
-    | .mutDefBlock ds => do
-      let defStrings ← ds.defs.join.mapM printDefinition
-      return s!"mutual\n{"\n".intercalate defStrings}\nend"
-    | .mutIndBlock is => do
-    -- TODO: print IndBlock
       return s!"TODO"
+      --return s!"{printIsSafe ind.safe}recursor {recr.name} {recr.lvls} : {← printExpr type} :=\n" ++
+      --       s!"  {ind.name}@{recr.idx}"
+    | .mutDef mutDef =>
+      return s!"TODO"
+      --return s!"mutdef {mutDef.name}@{mutDef.idx} {← printYatimaConst (← getConst mutDef.block)}"
+    | .mutInd mutInd =>
+      return s!"TODO"
+      --return s!"mutdef {mutInd.name}@{mutInd.idx} {← printYatimaConst (← getConst mutInd.block)}"
 
 end
 

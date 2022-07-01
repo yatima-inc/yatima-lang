@@ -28,6 +28,8 @@ instance : Coe ExprAnonCid  Ipld where coe u := .link u.data
 instance : Coe ExprMetaCid  Ipld where coe u := .link u.data
 instance : Coe ConstAnonCid Ipld where coe u := .link u.data
 instance : Coe ConstMetaCid Ipld where coe u := .link u.data
+instance : Coe BlockAnonCid Ipld where coe u := .link u.data
+instance : Coe BlockMetaCid Ipld where coe u := .link u.data
 
 instance [Coe α Ipld] [Coe β Ipld] : Coe (α ⊕ β) Ipld where coe
   | .inl i => i
@@ -81,10 +83,10 @@ instance : Coe ConstructorInfoAnon Ipld where coe
 instance : Coe ConstructorInfoMeta Ipld where coe
   | .mk n t => .array #[n, t]
 
-instance : Coe InductiveInfoAnon Ipld where coe
+instance : Coe InductiveAnon Ipld where coe
   | .mk l t p i cs is es r s r' => .array #[l, t, p, i, cs, is, es, r, s, r']
 
-instance : Coe InductiveInfoMeta Ipld where coe
+instance : Coe InductiveMeta Ipld where coe
   | .mk n l t cs is es => .array #[n, l, t, cs, is, es]
 
 instance : Coe QuotKind Ipld where coe
@@ -145,12 +147,12 @@ def constAnonToIpld : ConstAnon → Ipld
   | .opaque ⟨l, t, v, s⟩          => .array #[.number CONSTANON, .number 2,  l, t, v, s]
   | .quotient ⟨l, t, k⟩           => .array #[.number CONSTANON, .number 3,  l, t, k]
   | .definition ⟨n, l, t, v⟩      => .array #[.number CONSTANON, .number 4,  n, l, t, v]
-  | .inductive ⟨l, t, b, i⟩       => .array #[.number CONSTANON, .number 5,  l, t, b, i]
+  | .inductive ⟨l, t, p, i, c, ir, er, r, s, rf⟩       
+                                  => .array #[.number CONSTANON, .number 5,  l, t, p, i, c, ir, er, r, s, rf]
   | .constructor ⟨l, t, b, i, j⟩  => .array #[.number CONSTANON, .number 6,  l, t, b, i, j]
   | .recursor ⟨l, t, b, i, j, i'⟩ => .array #[.number CONSTANON, .number 7,  l, t, b, i, j, i']
   | .mutDef ⟨l, t, b, i⟩          => .array #[.number CONSTANON, .number 8,  l, t, b, i]
-  | .mutDefBlock ⟨ds⟩             => .array #[.number CONSTANON, .number 9,  ds]
-  | .mutIndBlock is               => .array #[.number CONSTANON, .number 10, is]
+  | .mutInd ⟨l, t, b, i⟩          => .array #[.number CONSTANON, .number 9,  l, t, b, i]
 
 def constMetaToIpld : ConstMeta → Ipld
   | .axiom ⟨n, l, t⟩          => .array #[.number CONSTMETA, .number 0,  n, l, t]
@@ -158,12 +160,12 @@ def constMetaToIpld : ConstMeta → Ipld
   | .opaque ⟨n, l, t, v⟩      => .array #[.number CONSTMETA, .number 2,  n, l, t, v]
   | .quotient ⟨n, l, t⟩       => .array #[.number CONSTMETA, .number 3,  n, l, t]
   | .definition ⟨n, l, t, v⟩  => .array #[.number CONSTMETA, .number 4,  n, l, t, v]
-  | .inductive ⟨n, l, t, b⟩   => .array #[.number CONSTMETA, .number 5,  n, l, t, b]
+  | .inductive ⟨n, l, t, c, ir, er⟩       
+                              => .array #[.number CONSTANON, .number 5,  n, l, t, c, ir, er]
   | .constructor ⟨n, l, t, b⟩ => .array #[.number CONSTMETA, .number 6,  n, l, t, b]
   | .recursor ⟨n, l, t, b⟩    => .array #[.number CONSTMETA, .number 7,  n, l, t, b]
-  | .mutDef ⟨n, l, t, b⟩      => .array #[.number CONSTMETA, .number 8,  n, l, t, b]
-  | .mutDefBlock ⟨ds⟩         => .array #[.number CONSTMETA, .number 9,  ds]
-  | .mutIndBlock is           => .array #[.number CONSTMETA, .number 10, is]
+  | .mutDef ⟨n, l, t, b, i⟩      => .array #[.number CONSTMETA, .number 8,  n, l, t, b, i]
+  | .mutInd ⟨n, l, t, b, i⟩      => .array #[.number CONSTMETA, .number 9,  n, l, t, b, i]
 
 def univAnonToCid (univAnon : UnivAnon) : UnivAnonCid :=
   { data := ipldToCid UNIVANON.toNat (univAnonToIpld univAnon) }

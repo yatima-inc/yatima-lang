@@ -1,6 +1,8 @@
 import Yatima.Name
 import Yatima.Expr
 
+set_option autoImplicit false
+
 namespace Yatima
 
 structure Axiom where
@@ -86,24 +88,31 @@ structure MutualDefinitionBlockAnon where
 structure MutualDefinitionBlockMeta where
   defs : List $ List DefinitionMeta
 
-structure MutualDefinition where
+structure MutualRef where
   name  : Name
   lvls  : List Name
   type  : ExprCid
-  block : ConstCid
-  idx   : Nat
+  block : BlockCid
+  index : Nat
+
+structure MutualRefAnon where
+  lvls  : Nat
+  type  : ExprAnonCid
+  block : BlockAnonCid
+  index : Nat
+
+structure MutualRefMeta where
+  name  : Name
+  lvls  : List Name
+  type  : ExprMetaCid
+  block : BlockMetaCid
+  index : Nat
 
 structure MutualDefinitionAnon where
   lvls  : Nat
   type  : ExprAnonCid
   block : ConstAnonCid
-  idx   : Nat
-
-structure MutualDefinitionMeta where
-  name  : Name
-  lvls  : List Name
-  type  : ExprMetaCid
-  block : ConstMetaCid
+  index   : Nat
 
 structure ConstructorInfo where
   name   : Name
@@ -158,7 +167,7 @@ structure RecursorInfoMeta where
   type    : ExprMetaCid
   rules   : List RecursorRuleMeta
 
-structure InductiveInfo where
+structure Inductive where
   name    : Name
   lvls    : List Name
   type    : ExprCid
@@ -171,7 +180,7 @@ structure InductiveInfo where
   safe    : Bool
   refl    : Bool
 
-structure InductiveInfoAnon where
+structure InductiveAnon where
   lvls    : Nat
   type    : ExprAnonCid
   params  : Nat
@@ -183,7 +192,7 @@ structure InductiveInfoAnon where
   safe    : Bool
   refl    : Bool
 
-structure InductiveInfoMeta where
+structure InductiveMeta where
   name    : Name
   lvls    : List Name
   type    : ExprMetaCid
@@ -191,24 +200,9 @@ structure InductiveInfoMeta where
   internalRecrs : List RecursorInfoMeta
   externalRecrs : List RecursorInfoMeta
 
-structure Inductive where
-  name    : Name
-  lvls    : List Name
-  type    : ExprCid
-  block   : ConstCid
-  ind     : Nat
-
-structure InductiveAnon where
-  lvls    : Nat
-  type    : ExprAnonCid
-  block   : ConstAnonCid
-  ind     : Nat
-
-structure InductiveMeta where
-  name    : Name
-  lvls    : List Name
-  type    : ExprMetaCid
-  block   : ConstMetaCid
+inductive Block
+  | defBlock : List (List Definition) → Block
+  | indBlock : List Inductive → Block
 
 structure Constructor where
   name    : Name
@@ -216,14 +210,14 @@ structure Constructor where
   type    : ExprCid
   block   : ConstCid
   ind     : Nat
-  idx     : Nat
+  index   : Nat
 
 structure ConstructorAnon where
   lvls    : Nat
   type    : ExprAnonCid
   block   : ConstAnonCid
   ind     : Nat
-  idx     : Nat
+  index   : Nat
 
 structure ConstructorMeta where
   name    : Name
@@ -237,7 +231,7 @@ structure Recursor where
   type    : ExprCid
   block   : ConstCid
   ind     : Nat
-  idx     : Nat
+  index   : Nat
   intern  : Bool
 
 structure RecursorAnon where
@@ -245,7 +239,7 @@ structure RecursorAnon where
   type    : ExprAnonCid
   block   : ConstAnonCid
   ind     : Nat
-  idx     : Nat
+  index   : Nat
   intern  : Bool
 
 structure RecursorMeta where
@@ -282,9 +276,8 @@ inductive Const
   | «inductive» : Inductive → Const
   | constructor : Constructor → Const
   | recursor    : Recursor → Const
-  | mutDef      : MutualDefinition → Const
-  | mutDefBlock : MutualDefinitionBlock → Const
-  | mutIndBlock : List InductiveInfo → Const
+  | mutInd      : MutualRef → Const
+  | mutDef      : MutualRef → Const
 
 inductive ConstAnon
   | «axiom»     : AxiomAnon → ConstAnon
@@ -295,9 +288,8 @@ inductive ConstAnon
   | «inductive» : InductiveAnon → ConstAnon
   | constructor : ConstructorAnon → ConstAnon
   | recursor    : RecursorAnon → ConstAnon
-  | mutDef      : MutualDefinitionAnon → ConstAnon
-  | mutDefBlock : MutualDefinitionBlockAnon → ConstAnon
-  | mutIndBlock : List InductiveInfoAnon → ConstAnon
+  | mutDef      : MutualRefAnon → ConstAnon
+  | mutInd      : MutualRefAnon → ConstAnon
 
 inductive ConstMeta
   | «axiom»     : AxiomMeta → ConstMeta
@@ -308,12 +300,14 @@ inductive ConstMeta
   | «inductive» : InductiveMeta → ConstMeta
   | constructor : ConstructorMeta → ConstMeta
   | recursor    : RecursorMeta → ConstMeta
-  | mutDef      : MutualDefinitionMeta → ConstMeta
-  | mutDefBlock : MutualDefinitionBlockMeta → ConstMeta
-  | mutIndBlock : List InductiveInfoMeta → ConstMeta
+  | mutDef      : MutualRefMeta → ConstMeta
+  | mutInd      : MutualRefMeta → ConstMeta
 
 def Definition.toAnon (d : Definition) : DefinitionAnon :=
   ⟨d.lvls.length, d.type.anon, d.value.anon, d.safety⟩
+
+def MutualRef.toAnon (d : MutualRef) : MutualRefAnon :=
+  ⟨d.lvls.length, d.type.anon, d.block.anon, d.index⟩
 
 def ConstructorInfo.toAnon (x : ConstructorInfo) : ConstructorInfoAnon :=
   ⟨x.type.anon, x.params, x.fields⟩
@@ -332,7 +326,7 @@ def RecursorInfo.toAnon (x: RecursorInfo) : RecursorInfoAnon :=
   , x.rules.map RecursorRule.toAnon
   , x.k ⟩
 
-def InductiveInfo.toAnon (x: InductiveInfo) : InductiveInfoAnon :=
+def Inductive.toAnon (x: Inductive) : InductiveAnon :=
   ⟨ x.lvls.length
   , x.type.anon
   , x.params
@@ -350,29 +344,29 @@ def Const.toAnon : Const → ConstAnon
   | .opaque o => .opaque ⟨o.lvls.length, o.type.anon, o.value.anon, o.safe⟩
   | .quotient q => .quotient ⟨q.lvls.length, q.type.anon, q.kind⟩
   | .definition d => .definition d.toAnon
-  | .inductive i => .inductive ⟨i.lvls.length, i.type.anon, i.block.anon, i.ind⟩
+  | .inductive i => .inductive ⟨i.lvls.length, i.type.anon, i.params, i.indices, 
+      i.ctors.map (·.toAnon), i.internalRecrs.map (·.toAnon), i.externalRecrs.map (·.toAnon), i.recr, i.safe, i.refl⟩
   | .constructor c => .constructor 
     ⟨ c.lvls.length
     , c.type.anon
     , c.block.anon
     , c.ind
-    , c.idx ⟩
+    , c.index ⟩
   | .recursor r => .recursor
     ⟨ r.lvls.length
     , r.type.anon
     , r.block.anon
     , r.ind
-    , r.idx
+    , r.index
     , r.intern ⟩
-  | .mutDef x => .mutDef ⟨x.lvls.length, x.type.anon, x.block.anon, x.idx⟩
-  | .mutDefBlock ds => .mutDefBlock ⟨(ds.defs.map fun ds => 
-      match ds.head? with 
-      | some d => [d] 
-      | none => []).join.map Definition.toAnon⟩
-  | .mutIndBlock is => .mutIndBlock (is.map InductiveInfo.toAnon)
+  | .mutDef x => .mutDef x.toAnon
+  | .mutInd x => .mutInd x.toAnon
 
 def Definition.toMeta (d: Definition) : DefinitionMeta :=
   ⟨d.name, d.lvls, d.type.meta, d.value.meta⟩
+
+def MutualRef.toMeta (d : MutualRef) : MutualRefMeta :=
+  ⟨d.name, d.lvls, d.type.meta, d.block.meta, d.index⟩
 
 def ConstructorInfo.toMeta (x: ConstructorInfo) : ConstructorInfoMeta :=
   ⟨x.name, x.type.meta⟩
@@ -385,7 +379,7 @@ def RecursorRule.toMeta (x: RecursorRule) : RecursorRuleMeta :=
 def RecursorInfo.toMeta (x: RecursorInfo) : RecursorInfoMeta :=
   ⟨x.name, x.type.meta, x.rules.map RecursorRule.toMeta⟩
 
-def InductiveInfo.toMeta (x: InductiveInfo) : InductiveInfoMeta :=
+def Inductive.toMeta (x: Inductive) : InductiveMeta :=
   ⟨ x.name
   , x.lvls
   , x.type.meta
@@ -399,38 +393,17 @@ def Const.toMeta : Const → ConstMeta
   | .opaque o => .opaque ⟨o.name, o.lvls, o.type.meta, o.value.meta⟩
   | .quotient q => .quotient ⟨q.name, q.lvls, q.type.meta⟩
   | .definition d => .definition d.toMeta
-  | .inductive i => .inductive ⟨i.name, i.lvls, i.type.meta, i.block.meta⟩
+  | .inductive i => .inductive i.toMeta
   | .constructor c => .constructor ⟨c.name, c.lvls, c.type.meta, c.block.meta⟩
   | .recursor r => .recursor ⟨r.name, r.lvls, r.type.meta, r.block.meta⟩
-  | .mutDef x => .mutDef ⟨x.name, x.lvls, x.type.meta, x.block.meta⟩
-  | .mutDefBlock ds => .mutDefBlock ⟨ds.defs.map fun ds => ds.map Definition.toMeta⟩
-  | .mutIndBlock is => .mutIndBlock (is.map InductiveInfo.toMeta)
+  | .mutDef x => .mutDef x.toMeta
+  | .mutInd x => .mutInd x.toMeta
 
-def Const.lvlsAndType : Const → Option ((List Name) × ExprCid)
-  | .axiom       x
-  | .theorem     x
-  | .opaque      x
-  | .quotient    x
-  | .definition  x
-  | .inductive   x
-  | .constructor x
-  | .recursor    x
-  | .mutDef      x => some (x.lvls, x.type)
-  | .mutDefBlock _ => none
-  | .mutIndBlock _ => none
+def Const.lvlsAndType (x : Const) : ((List Name) × ExprCid) := by
+  cases x <;> next x => exact (x.lvls, x.type)
 
-def Const.name : Const → Name
-  | .axiom       x
-  | .theorem     x
-  | .opaque      x
-  | .definition  x
-  | .inductive   x
-  | .constructor x
-  | .recursor    x
-  | .quotient    x
-  | .mutDef      x => x.name
-  | .mutDefBlock x => s!"mutual definitions {x.defs.map fun ds => ds.map (·.name)}" -- TODO
-  | .mutIndBlock x => s!"mutual inductives {x.map (·.name)}" -- TODO
+def Const.name (x : Const) : Name := by
+  cases x <;> next x => exact x.name
 
 def Const.ctorName : Const → String
   | .axiom       _ => "axiom"
@@ -442,7 +415,6 @@ def Const.ctorName : Const → String
   | .constructor _ => "constructor"
   | .recursor    _ => "recursor"
   | .mutDef      _ => "mutDef"
-  | .mutDefBlock _ => "mutDefBlock"
-  | .mutIndBlock _ => "indBlock"
+  | .mutInd      _ => "mutInd"
 
 end Yatima
