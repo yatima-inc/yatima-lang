@@ -104,14 +104,14 @@ mutual
     -- TODO: print actual ConstructorInfo
     | .constructor ctor => do
       let type ← getExpr ctor.type ctor.name
-      let ind ← getConst ctor.block
+      -- let ind ← getConst ctor.block
       return s!"TODO"
       --return s!"{printIsSafe ind.safe}constructor {ctor.name} {ctor.lvls} : {← printExpr type} :=\n" ++
       --       s!"  {ind.name}@{ctor.idx}"
     -- TODO: print actual RecursorInfo
     | .recursor recr => do
       let type ← getExpr recr.type recr.name
-      let ind ← getConst recr.block
+      -- let ind ← getConst recr.block
       return s!"TODO"
       --return s!"{printIsSafe ind.safe}recursor {recr.name} {recr.lvls} : {← printExpr type} :=\n" ++
       --       s!"  {ind.name}@{recr.idx}"

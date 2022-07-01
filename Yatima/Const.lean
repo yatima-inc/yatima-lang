@@ -1,8 +1,6 @@
 import Yatima.Name
 import Yatima.Expr
 
-set_option autoImplicit false
-
 namespace Yatima
 
 structure Axiom where
@@ -112,7 +110,7 @@ structure MutualDefinitionAnon where
   lvls  : Nat
   type  : ExprAnonCid
   block : ConstAnonCid
-  index   : Nat
+  index : Nat
 
 structure ConstructorInfo where
   name   : Name
@@ -208,14 +206,14 @@ structure Constructor where
   name    : Name
   lvls    : List Name
   type    : ExprCid
-  block   : ConstCid
+  block   : BlockCid
   ind     : Nat
   index   : Nat
 
 structure ConstructorAnon where
   lvls    : Nat
   type    : ExprAnonCid
-  block   : ConstAnonCid
+  block   : BlockAnonCid
   ind     : Nat
   index   : Nat
 
@@ -223,13 +221,13 @@ structure ConstructorMeta where
   name    : Name
   lvls    : List Name
   type    : ExprMetaCid
-  block   : ConstMetaCid
+  block   : BlockMetaCid
 
 structure Recursor where
   name    : Name
   lvls    : List Name
   type    : ExprCid
-  block   : ConstCid
+  block   : BlockCid
   ind     : Nat
   index   : Nat
   intern  : Bool
@@ -237,7 +235,7 @@ structure Recursor where
 structure RecursorAnon where
   lvls    : Nat
   type    : ExprAnonCid
-  block   : ConstAnonCid
+  block   : BlockAnonCid
   ind     : Nat
   index   : Nat
   intern  : Bool
@@ -246,7 +244,7 @@ structure RecursorMeta where
   name    : Name
   lvls    : List Name
   type    : ExprMetaCid
-  block   : ConstMetaCid
+  block   : BlockMetaCid
 
 inductive QuotKind where
   | type | ctor | lift | ind
@@ -399,7 +397,7 @@ def Const.toMeta : Const → ConstMeta
   | .mutDef x => .mutDef x.toMeta
   | .mutInd x => .mutInd x.toMeta
 
-def Const.lvlsAndType (x : Const) : ((List Name) × ExprCid) := by
+def Const.lvlsAndType (x : Const) : (List Name) × ExprCid := by
   cases x <;> next x => exact (x.lvls, x.type)
 
 def Const.name (x : Const) : Name := by
