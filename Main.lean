@@ -25,6 +25,15 @@ def main (args : List String) : IO UInt32 := do
       -- todo: print help
       return 0
     | "test" => 
+      for i in [:1] do
+        let (mutualTest, expected) ← Gen.run (randomMutual s!"Test{i}") 4
+        IO.println s!"{mutualTest}"
+        match ← runFrontend (toString mutualTest) "test"
+            (args.contains "-pl") (args.contains "-py") with
+          | .error err => IO.eprintln err;
+          | .ok env => 
+            if assertMutual env mutualTest.name expected then
+              IO.println "the same"
       return 0 
     | _ => return 0
   else
