@@ -122,10 +122,24 @@ mutual
   -/
   partial def processYatimaConst (const : Lean.ConstantInfo) :
       CompileM $ ConstCid × ConstIdx := do
-    let name := const.name
+    let name := const.name.toString
+    let log := (← read).log
     match (← get).cache.find? name with
-    | some c => pure c
-    | none   => toYatimaConst const
+    | some c => return c
+    | none   =>
+      if log then
+        IO.println s!"↡ Stacking {name}{const.formatAll}"
+      let c ← toYatimaConst const
+      if log then
+        IO.println s!"↟ Popping  {name}"
+        IO.println "\n========================================="
+        IO.println    name
+        IO.println   "========================================="
+        IO.println s!"{PrintLean.printLeanConst const}"
+        IO.println   "========================================="
+        IO.println s!"{← PrintYatima.printYatimaConst (← derefConst c.2)}"
+        IO.println   "=========================================\n"
+      return c
 
   partial def toYatimaConst : Lean.ConstantInfo → CompileM (ConstCid × ConstIdx)
   -- These cases add multiple constants at the same time
@@ -568,7 +582,6 @@ mutual
           -- TODO Isn't `mutDefIdx` unnecessary? Couldn't we use `mutualIdxs` instead?
           modify (fun stt => { stt with mutDefIdx := stt.mutDefIdx.insert d.name i })
           mutualIdxs := mutualIdxs.insert d.name (i, firstIdx + i)
-      dbg_trace s!"mutual idxs {mutualIdxs.toList}"
       let definitions ← withRecrs mutualIdxs $
         mutualDefs.mapM fun ds => ds.mapM $ toYatimaDefIpld
       let definitionsAnon := (definitions.map fun ds => match ds.head? with | some d => [d.1.anon] | none => []).join
@@ -692,22 +705,8 @@ mutual
 
 end
 
-def compileM (constMap : Lean.ConstMap) : CompileM Unit := do
-  let log := (← read).log
-  constMap.forM fun _ const => do
-    let name := const.name
-    if log then
-      IO.println s!"↡ Stacking {name}{const.formatAll}"
-    let (_, c) ← processYatimaConst const
-    if log then
-      IO.println s!"↟ Popping  {name}"
-      IO.println "\n========================================="
-      IO.println    name
-      IO.println   "========================================="
-      IO.println s!"{PrintLean.printLeanConst const}"
-      IO.println   "========================================="
-      IO.println s!"{← PrintYatima.printYatimaConst (← derefConst c)}"
-      IO.println   "=========================================\n"
+def compileM (constMap : Lean.ConstMap) : CompileM Unit :=
+  constMap.forM fun _ const => discard $ processYatimaConst const
 
 def compile (filePath : System.FilePath)
   (log : Bool := false) (stt : CompileState := default) :
